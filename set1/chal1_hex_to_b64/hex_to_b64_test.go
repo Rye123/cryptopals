@@ -22,7 +22,10 @@ func TestHexToBase64(t *testing.T) {
 		"",
 	}
 	for i, test := range tests {
-		result := HexToBase64(test)
+		result, err := HexToBase64(test)
+		if err != nil {
+			t.Fatalf(`HexToBase64("%s") gave an error: %v`, test, err)
+		}
 		expected := expcs[i]
 		if result != expected {
 			t.Fatalf(`HexToBase64("%s") = "%s", expected "%s"`, test, result, expected)
