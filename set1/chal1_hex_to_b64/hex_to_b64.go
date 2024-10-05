@@ -3,7 +3,6 @@ package hex_to_b64
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 )
 
@@ -114,13 +113,3 @@ func HexToBase64(hexstring string) (string, error) {
 	return BytesToBase64(bytestr)
 }
 
-
-
-func main() {
-	args := os.Args
-
-	if len(args) < 2 {
-		fmt.Println("Expected hexstrings as arguments.")
-		return
-	}
-}
