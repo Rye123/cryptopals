@@ -90,24 +90,9 @@ func BytesToBase64(bytes []byte) (string, error) {
 
 // Converts a hex string into base64
 func HexToBase64(hexstring string) (string, error) {
-	if len(hexstring) % 2 != 0 {
-		return "", errors.New("Expected hexstring to have even length.")
-	}
-	
-	// 1. Convert hexstring to bytes
-	bytestr := []byte("")
-	b_hex := ""
-	for _, c := range hexstring {
-		b_hex += string(c)
-		if len(b_hex) == 2 {
-			b, err := strconv.ParseInt(b_hex, 16, 16)
-			if err != nil {
-				return "", err
-			}
-			bytestr = append(bytestr, byte(b))
-			b_hex = ""
-		}
-		
+	bytestr, err := HexToBytes(hexstring)
+	if err != nil {
+		return "", err
 	}
 
 	return BytesToBase64(bytestr)
