@@ -1,4 +1,4 @@
-package hex_to_b64
+package encoding
 
 import (
 	"testing"
