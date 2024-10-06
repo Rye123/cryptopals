@@ -1,0 +1,66 @@
+package encryption
+
+import "testing"
+
+func isBytestringEqual(h1, h2 []byte) bool {
+	if len(h1) != len(h2) {
+		return false
+	}
+	for i := 0; i < len(h1); i++ {
+		if h1[i] != h2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+
+func TestXorBytes(t *testing.T) {
+	tests_b1 := [][]byte{
+		{},
+		{0x00},
+		{0xab, 0xcd, 0xef},
+		{0x12, 0x34, 0x56, 0x78},
+		{0xde, 0xad, 0xbe, 0xef},
+		{0x1c, 0x01, 0x11, 0x00, 0x1f, 0x01, 0x01, 0x00, 0x06, 0x1a, 0x02, 0x4b, 0x53, 0x53, 0x50, 0x09, 0x18, 0x1c},
+	}
+	tests_b2 := [][]byte{
+		{},
+		{0x00},
+		{0x12, 0x34, 0x56},
+		{0x00, 0x00, 0x00, 0x00},
+		{0xca, 0xfe, 0xba, 0xbe},
+		{0x68, 0x69, 0x74, 0x20, 0x74, 0x68, 0x65, 0x20, 0x62, 0x75, 0x6c, 0x6c, 0x27, 0x73, 0x20, 0x65, 0x79, 0x65},
+	}
+	expcs := [][]byte{
+		{},
+		{0x00},
+		{0xb9, 0xf9, 0xb9},
+		{0x12, 0x34, 0x56, 0x78},
+		{0x14, 0x53, 0x04, 0x51},
+		{0x74, 0x68, 0x65, 0x20, 0x6b, 0x69, 0x64, 0x20, 0x64, 0x6f, 0x6e, 0x27, 0x74, 0x20, 0x70, 0x6c, 0x61, 0x79},
+	}
+
+	if len(tests_b1) != len(tests_b2) || len(tests_b1) != len(expcs) {
+		t.Fatalf(`TestXorBytes: Test error, number of tests do not match.`)
+	}
+
+	for i := 0; i < len(expcs); i++ {
+		result1, err := XorBytes(tests_b1[i], tests_b2[i])
+		if err != nil {
+			t.Fatalf(`TestXorBytes(tests_b1[%d], tests_b2[%d]) gives an error: %v`, i, i, err)
+		}
+		result2, err := XorBytes(tests_b2[i], tests_b1[i])
+		if err != nil {
+			t.Fatalf(`TestXorBytes(tests_b2[%d], tests_b1[%d]) gives an error: %v`, i, i, err)
+		}
+
+		if !isBytestringEqual(result1, result2) {
+			t.Fatalf(`TestXorBytes(tests_b1[%d], tests_b2[%d]) != TestsXorBytes(tests_b2[%d], tests_b1[%d])`, i, i, i, i)
+		}
+
+		if !isBytestringEqual(result1, expcs[i]) {
+			t.Fatalf(`TestXorBytes(tests_b1[%d], tests_b2[%d]) != expc[%d]`, i, i, i)
+		}
+	}
+}
