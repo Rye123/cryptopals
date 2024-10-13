@@ -1,63 +1,104 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"sort"
+	"os"
+	"slices"
+
+	"github.com/Rye123/cryptopals/lib/attacks"
 	"github.com/Rye123/cryptopals/lib/encoding"
 	"github.com/Rye123/cryptopals/lib/encryption"
-	"github.com/Rye123/cryptopals/lib/attacks"
 )
 
-// Prints the top five possible decryptions of the given string
-func evaluateHexstring(hexstr string) {
+// A guess of a ciphertext and a key, along with the evaluated score.
+type guess struct {
+	hexstr string
+	key byte
+	score float64
+}
+
+// Returns a slice of guesses.
+func evaluateHexstring(hexstr string) ([]guess, error) {
 	text, err := encoding.HexToBytes(hexstr)
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		return
+		return nil, err
 	}
 
 	// Attempt to decrypt
-	scores := make(map[int]float64)
-	for i := 0; i < 256; i++ {
-		decrypted, err := encryption.XorSingleByte(text, byte(i))
+	guesses := make([]guess, 0, 256)
+	for i := 0; i <= 0xff; i++ {
+		key := byte(i)
+		decrypted, err := encryption.XorSingleByte(text, key)
 		if err != nil {
 			fmt.Printf("Error decrypting with key %d: %v\n", i, err)
-			scores[i] = 0.0
 			continue
 		}
 
-		scores[i] = attacks.ScoreText(decrypted)
+		score := attacks.ScoreText(decrypted)
+		guesses = append(guesses, guess{hexstr, key, score})
 	}
 
-	// Sort scores by value
-	keys := make([]int, 0, len(scores))
-	for key := range scores {
-		keys = append(keys, key)
-	}
-
-	sort.Slice(keys, func(i, j int) bool {
-		return scores[keys[i]] > scores[keys[j]]
-	})
-
-	// Print top 3 keys and decrypted values
-	count := 3
-	fmt.Printf("String: %s:\n", hexstr)
-	for _, key := range keys {
-		if count == 0 {
-			return
-		}
-		count--
-		decrypted, err := encryption.XorSingleByte(text, byte(key))
-		if err != nil {
-			decrypted = []byte("(Invalid string)")
-		}
-		fmt.Printf("Key %d: %f: %s\n", key, scores[key], decrypted)
-	}
-	fmt.Printf("\n")
+	return guesses, nil
 }
 
-func main() {
-	test_str := "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 
-	evaluateHexstring(test_str)
+func main() {
+	f, err := os.Open("4.txt")
+	if err != nil {
+		fmt.Printf("File Open Error: %v\n", err)
+		return
+	}
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			fmt.Printf("Exit Error: %v\n", err)
+		}
+	}()
+
+	scanner := bufio.NewScanner(f)
+	allGuesses := make([]guess, 0, 256)
+	for scanner.Scan() {
+		hexstr := scanner.Text()
+		guesses, err := evaluateHexstring(hexstr)
+		if err != nil {
+			fmt.Printf("Error evaluting string %s: %v", hexstr, err)
+			continue
+		}
+		allGuesses = append(allGuesses, guesses...)
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("Scanner Error: %v\n", err)
+		return
+	}
+
+	// Sort guesses by score
+	slices.SortFunc(allGuesses, func(guess1, guess2 guess) int {
+		if guess1.score > guess2.score {
+			return -1
+		} else if guess1.score < guess2.score {
+			return 1
+		}
+		return 0
+	})
+
+	// Print top `limit` guesses
+	limit := 10
+	for _, guess := range allGuesses {
+		if limit == 0 {
+			return
+		}
+		limit--
+		text, err := encoding.HexToBytes(guess.hexstr)
+		if err != nil {
+			fmt.Printf("Hex decode error with hexstring %s: %v", guess.hexstr, err)
+		}
+		decrypted, err := encryption.XorSingleByte(text, guess.key)
+		if err != nil {
+			fmt.Printf("Decrypt error with hexstring %s, key %d: %v", guess.hexstr, guess.key, err)
+		}
+		fmt.Printf("%s: Key %d: %f: %s\n", guess.hexstr, guess.key, guess.score, decrypted)
+	}
 }
