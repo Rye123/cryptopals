@@ -1,6 +1,9 @@
 package attacks
 
-import "math"
+import (
+	"math"
+	"unicode"
+)
 
 var CHAR_FREQ_ENGLISH = map[rune]float64{
 	'A': 0.082,
@@ -29,16 +32,18 @@ var CHAR_FREQ_ENGLISH = map[rune]float64{
 	'X': 0.0015,
 	'Y': 0.020,
 	'Z': 0.00074,
+	' ': 0.254,
 }
 
-// Returns if the given byte represents a printable character in ASCII (i.e. alphabet, number, punctuation)
-func isPrintable(b byte) bool {
-	return b >= 0x20 && b <= 0x7E
+func isControlCharacter(b byte) bool {
+	if (b >= 0x0 && b <= 0x8) || (b >= 0xB && b <= 0x1F) { // ignore tab and linefeed
+		return true
+	}
+	return false
 }
 
-// Scores how likely the text is to be English
-func ScoreText(text []byte) float64 {
-	// If text contains non-printable characters, probably not English
+// Returns the fitting quotient of the text from a reference frequency
+func GetFittingQuotient(text []byte, refFreq map[rune]float64) float64 {
 	textFreq := map[rune]float64{
 		'A': 0.0,
 		'B': 0.0,
@@ -65,50 +70,83 @@ func ScoreText(text []byte) float64 {
 		'W': 0.0,
 		'X': 0.0,
 		'Y': 0.0,
-		'Z': 0.0,		
+		'Z': 0.0,
+		' ': 0.0,
 	}
 
-	letterCount := 0
 	for _, b := range text {
-		if !isPrintable(b) {
-			return 0.0
-		}
-
 		// Add to textFreq if letter
 		if b >= 0x41 && b <= 0x5A {
-			letterCount++
 			textFreq[rune(b)]++
 		}
 		if b >= 0x61 && b <= 0x7A {
-			letterCount++
 			textFreq[rune(b - 32)]++
+		}
+		if b == 0x20 {
+			textFreq[rune(b)]++
 		}
 	}
 
 	// Evaluate frequencies
-	if letterCount > 0 {
+	if len(text) > 0 {
 		for c, _ := range textFreq {
-			textFreq[c] /= float64(letterCount)
+			textFreq[c] /= float64(len(text))
 		}
 	}
 	
-	// Compute mean squared deviation between actual and english frequency
-	msd := 0.0
+	// Compute fitting quotient
+	fq := 0.0
 	for c, _ := range textFreq {
-		deviation := textFreq[c] - CHAR_FREQ_ENGLISH[c]
-		msd += (deviation * deviation)
+		deviation := textFreq[c] - refFreq[c]
+		fq += math.Abs(deviation)
+	}
+	fq /= float64(len(refFreq))
+
+	return fq
+	
+}
+
+// Returns the Shannon entropy of a text
+func GetShannonEntropy(text []byte) float64 {
+	if len(text) == 0 {
+		return 0.0
 	}
 	
-	// Compute Shannon entropy
+	freq := make(map[byte]float64)
+
+	// Get count
+	for _, b := range text {
+		b := byte(unicode.ToUpper(rune(b)))
+		freq[b]++
+	}
+
+	// Get freq
+	for _, b := range text {
+		b := byte(unicode.ToUpper(rune(b)))
+		freq[b] = freq[b] / float64(len(text))
+	}
+
 	entropy := 0.0
-	for c, _ := range textFreq {
-		if textFreq[c] != 0 {
-			entropy -= textFreq[c] * math.Log(textFreq[c])
+	for _, char_freq := range freq {
+		if char_freq != 0 {
+			entropy -= char_freq * math.Log(char_freq)
 		}
 	}
 
-	// Compute final score
-	score := entropy - msd
+	return entropy
+}
+
+// Scores how likely the text is to be English
+func ScoreText(text []byte) float64 {
+	// 1. Naive check if text has any unprintable characters
+	for _, b := range text {
+		if isControlCharacter(b) {
+			return 0.0
+		}
+	}
 	
-	return score
+	// 2. Compute fitting quotient from English
+	fq := GetFittingQuotient(text, CHAR_FREQ_ENGLISH)
+
+	return 1 - fq
 }
