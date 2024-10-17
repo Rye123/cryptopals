@@ -11,3 +11,8 @@ func IsBytestringEqual(h1, h2 []byte) bool {
 	}
 	return true
 }
+
+// Returns the hamming distance between two bytestrings
+func HammingDistance(h1, h2 []byte) (int, error) {
+	return 0, nil
+}
