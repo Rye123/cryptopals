@@ -1,4 +1,4 @@
-package attacks
+package util
 
 import (
 	"math"
@@ -33,13 +33,6 @@ var CHAR_FREQ_ENGLISH = map[rune]float64{
 	'Y': 0.020,
 	'Z': 0.00074,
 	' ': 0.254,
-}
-
-func isControlCharacter(b byte) bool {
-	if (b >= 0x0 && b <= 0x8) || (b >= 0xB && b <= 0x1F) { // ignore tab and linefeed
-		return true
-	}
-	return false
 }
 
 // Returns the fitting quotient of the text from a reference frequency
@@ -134,19 +127,4 @@ func GetShannonEntropy(text []byte) float64 {
 	}
 
 	return entropy
-}
-
-// Scores how likely the text is to be English
-func ScoreText(text []byte) float64 {
-	// 1. Naive check if text has any unprintable characters
-	for _, b := range text {
-		if isControlCharacter(b) {
-			return 0.0
-		}
-	}
-	
-	// 2. Compute fitting quotient from English
-	fq := GetFittingQuotient(text, CHAR_FREQ_ENGLISH)
-
-	return 1 - fq
 }

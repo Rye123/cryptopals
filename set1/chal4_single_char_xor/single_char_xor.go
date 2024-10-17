@@ -27,16 +27,13 @@ func evaluateHexstring(hexstr string) ([]guess, error) {
 	}
 
 	// Attempt to decrypt
+	guessMap, err := attacks.BreakXorSingleByte(text)
+	if err != nil {
+		return nil, err
+	}
+	
 	guesses := make([]guess, 0, 256)
-	for i := 0; i <= 0xff; i++ {
-		key := byte(i)
-		decrypted, err := encryption.XorSingleByte(text, key)
-		if err != nil {
-			fmt.Printf("Error decrypting with key %d: %v\n", i, err)
-			continue
-		}
-
-		score := attacks.ScoreText(decrypted)
+	for key, score := range guessMap {
 		guesses = append(guesses, guess{hexstr, key, score})
 	}
 
