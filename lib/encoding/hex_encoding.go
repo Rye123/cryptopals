@@ -2,6 +2,7 @@ package encoding
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -31,7 +32,7 @@ func HexToBytes(hexstring string) ([]byte, error) {
 func BytesToHex(bytestring []byte) (string, error) {
 	hexstring := ""
 	for _, b := range bytestring {
-		hexstring += strconv.FormatInt(int64(b), 16)
+		hexstring += fmt.Sprintf("%02x", int64(b))
 	}
 	return hexstring, nil
 }

@@ -25,6 +25,7 @@ func TestHexToBytes(t *testing.T) {
 		"48656c6c6f20776f726c64",
 		"54657374696e67206f6e652074776f207468726565",
 		"1234567890",
+		"0a0b0110200c",
 	}
 
 	expcs := [][]byte {
@@ -32,6 +33,7 @@ func TestHexToBytes(t *testing.T) {
 		[]byte("Hello world"),
 		[]byte("Testing one two three"),
 		{0x12, 0x34, 0x56, 0x78, 0x90},
+		{0x0a, 0x0b, 0x01, 0x10, 0x20, 0x0c},
 	}
 
 	for i, test := range tests {
@@ -53,6 +55,7 @@ func TestBytesToHex(t *testing.T) {
 		[]byte("Hello world"),
 		[]byte("Testing one two three"),
 		{0x12, 0x34, 0x56, 0x78, 0x90},
+		{0x0a, 0x0b, 0x01, 0x10, 0x20, 0x0c},
 	}
 	
 	expcs := []string{
@@ -60,6 +63,7 @@ func TestBytesToHex(t *testing.T) {
 		"48656c6c6f20776f726c64",
 		"54657374696e67206f6e652074776f207468726565",
 		"1234567890",
+		"0a0b0110200c",
 	}
 
 	for i, test := range tests {
