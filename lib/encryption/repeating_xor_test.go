@@ -1,6 +1,9 @@
 package encryption
 
-import "testing"
+import (
+	"testing"
+	"github.com/Rye123/cryptopals/lib/util"
+)
 
 func TestXorRepeating(t *testing.T) {
 	tests_bytestr := [][]byte{
@@ -33,7 +36,7 @@ func TestXorRepeating(t *testing.T) {
 		if err != nil {
 			t.Fatalf(`TestXorRepeating(tests_bytestr[%d], tests_key[%d]) gave error: %v`, i, i, err)
 		}
-		if !isBytestringEqual(result, expcs[i]) {
+		if !util.IsBytestringEqual(result, expcs[i]) {
 			t.Fatalf(`TestXorRepeating(tests_bytestr[%d], tests_key[%d]) != expcs[%d]`, i, i, i)
 		}
 	}

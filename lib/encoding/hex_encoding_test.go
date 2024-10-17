@@ -2,19 +2,8 @@ package encoding
 
 import (
 	"testing"
+	"github.com/Rye123/cryptopals/lib/util"
 )
-
-func isBytestringEqual(h1, h2 []byte) bool {
-	if len(h1) != len(h2) {
-		return false
-	}
-	for i := 0; i < len(h1); i++ {
-		if h1[i] != h2[i] {
-			return false
-		}
-	}
-	return true
-}
 
 func TestHexToBytes(t *testing.T) {
 	// Test error
@@ -52,7 +41,7 @@ func TestHexToBytes(t *testing.T) {
 		}
 		
 		expected := expcs[i]
-		if !isBytestringEqual(result, expected) {
+		if !util.IsBytestringEqual(result, expected) {
 			t.Fatalf(`HexToBytes("%s") did not match`, test)
 		}
 	}

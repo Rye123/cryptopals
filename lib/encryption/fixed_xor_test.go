@@ -1,19 +1,9 @@
 package encryption
 
-import "testing"
-
-func isBytestringEqual(h1, h2 []byte) bool {
-	if len(h1) != len(h2) {
-		return false
-	}
-	for i := 0; i < len(h1); i++ {
-		if h1[i] != h2[i] {
-			return false
-		}
-	}
-	return true
-}
-
+import (
+	"testing"
+	"github.com/Rye123/cryptopals/lib/util"
+)
 
 func TestXorBytes(t *testing.T) {
 	tests_b1 := [][]byte{
@@ -55,11 +45,11 @@ func TestXorBytes(t *testing.T) {
 			t.Fatalf(`TestXorBytes(tests_b2[%d], tests_b1[%d]) gives an error: %v`, i, i, err)
 		}
 
-		if !isBytestringEqual(result1, result2) {
+		if !util.IsBytestringEqual(result1, result2) {
 			t.Fatalf(`TestXorBytes(tests_b1[%d], tests_b2[%d]) != TestsXorBytes(tests_b2[%d], tests_b1[%d])`, i, i, i, i)
 		}
 
-		if !isBytestringEqual(result1, expcs[i]) {
+		if !util.IsBytestringEqual(result1, expcs[i]) {
 			t.Fatalf(`TestXorBytes(tests_b1[%d], tests_b2[%d]) != expc[%d]`, i, i, i)
 		}
 	}
