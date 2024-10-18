@@ -56,7 +56,7 @@ func base64ReverseLookup(c rune) (int, error) {
 		return -1, nil
 	}
 
-	return -1, errors.New(fmt.Sprintf("base64ReverseLookup: Invalid rune %c\n", c))
+	return -1, errors.New(fmt.Sprintf("base64ReverseLookup: Invalid rune '%c'\n", c))
 }
 
 func BytesToBase64(bytes []byte) (string, error) {
