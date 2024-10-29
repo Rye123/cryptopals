@@ -2,6 +2,8 @@ package aes
 
 import (
 	"testing"
+
+	"github.com/Rye123/cryptopals/lib/util"
 )
 
 func TestRcon(t *testing.T) {
@@ -62,5 +64,28 @@ func TestSBox(t *testing.T) {
 			t.Fatalf("TestSBox (Inv): results[%d] = %x, expected %x", i, result, tests[i])
 		}
 	}
-	
+}
+
+func TestRowShift(t *testing.T) {
+	state := []byte{
+		0xde, 0xad, 0xbe, 0xef,
+		0xca, 0xfe, 0xba, 0xbe,
+		0xaa, 0xbb, 0xcc, 0xdd,
+		0x01, 0x02, 0x03, 0x04,
+	}
+	expcNewState := []byte{
+		0xde, 0xad, 0xbe, 0xef,
+		0xfe, 0xba, 0xbe, 0xca,
+		0xcc, 0xdd, 0xaa, 0xbb,
+		0x04, 0x01, 0x02, 0x03,
+	}
+	newState := rowShift(state)
+	origState := rowShiftInv(expcNewState)
+
+	if !util.IsBytestringEqual(newState, expcNewState) {
+		t.Fatalf("TestRowShift: newState != state. newState = %s", util.BytestringAsString(newState))
+	}
+	if !util.IsBytestringEqual(origState, state) {
+		t.Fatalf("TestRowShift (Inv): origState != state. origState = %s", util.BytestringAsString(origState))
+	}
 }

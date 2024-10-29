@@ -1,5 +1,7 @@
 package aes
 
+import "fmt"
+
 var forwardSBox = [16][16]byte{
 	{0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
 	{0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
@@ -75,4 +77,81 @@ func sBoxInv(in byte) byte {
 	lsn := in & 0xf
 
 	return inverseSBox[msn][lsn]
+}
+
+// panics if the state array is invalid
+func validateStateArray(state []byte) {
+	if len(state) != 16 {
+		panic(fmt.Errorf("Expected state array of size 16, got %d", len(state)))
+	}
+}
+
+// AES forward s-box on a state array
+func subBytes(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	for i, b := range state {
+		result[i] = sBox(b)
+	}
+	return result
+}
+
+// AES inverse s-box on a state array
+func subBytesInv(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	for i, b := range state {
+		result[i] = sBoxInv(b)
+	}
+	return result
+}
+
+func rowShift(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	copy(result[0:4], state[0:4])
+	
+	// Row 1 is shifted left once
+	result[4] = state[5]
+	result[5] = state[6]
+	result[6] = state[7]
+	result[7] = state[4]
+
+	// Row 2 is shifted left twice
+	result[8] = state[10]
+	result[9] = state[11]
+	result[10] = state[8]
+	result[11] = state[9]
+
+	// Row 3 is shifted left thrice
+	result[12] = state[15]
+	result[13] = state[12]
+	result[14] = state[13]
+	result[15] = state[14]
+	return result
+}
+
+func rowShiftInv(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	copy(result[0:4], state[0:4])
+	
+	// Row 1 is shifted right once
+	result[4] = state[7]
+	result[5] = state[4]
+	result[6] = state[5]
+	result[7] = state[6]
+
+	// Row 2 is shifted right twice
+	result[8] = state[10]
+	result[9] = state[11]
+	result[10] = state[8]
+	result[11] = state[9]
+
+	// Row 3 is shifted right thrice
+	result[12] = state[13]
+	result[13] = state[14]
+	result[14] = state[15]
+	result[15] = state[12]
+	return result
 }
