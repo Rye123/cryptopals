@@ -3,7 +3,7 @@ package aes
 import (
 	"fmt"
 
-	_ "github.com/Rye123/cryptopals/lib/encryption"
+	"github.com/Rye123/cryptopals/lib/encryption"
 	"github.com/Rye123/cryptopals/lib/util"
 )
 
@@ -12,7 +12,7 @@ func keyScheduleCore(word []byte, i int) []byte {
 	copy(result, word)
 
 	// 1. 8-bit left circular rotate
-	result = util.CircularRotate(result, 2, true)
+	result = util.CircularRotate(result, 1, true)
 
 	// 2. Apply S-box on each byte
 	for i, b := range result {
@@ -24,6 +24,60 @@ func keyScheduleCore(word []byte, i int) []byte {
 	result[0] = result[0] ^ rc
 
 	return result
+}
+
+// Returns the round key for roundConstant
+func genRoundKey(roundConstant int, keySize int, prevRoundKey []byte) ([]byte, error) {
+	var err error
+	roundKey := make([]byte, 0, keySize)
+
+	// Set initial temporary value
+	t := make([]byte, 4)
+	copy(t, prevRoundKey[keySize-4:])
+	t = keyScheduleCore(t, roundConstant)
+
+	switch keySize {
+	case 16:
+		for i := 0; i < 4; i++ {
+			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			if err != nil {
+				return nil, err
+			}
+			roundKey = append(roundKey, t...)
+		}
+	case 24:
+		for i := 0; i < 6; i++ {
+			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			if err != nil {
+				return nil, err
+			}
+			roundKey = append(roundKey, t...)
+		}
+	case 32:
+		for i := 0; i < 4; i++ {
+			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			if err != nil {
+				return nil, err
+			}
+			roundKey = append(roundKey, t...)
+		}
+
+		// Apply s-box on previous value
+		for i := 0; i < 4; i++ {
+			t[i] = sBox(t[i])
+		}
+		
+		for i := 0; i < 4; i++ {
+			t, err = encryption.XorBytes(t, prevRoundKey[(i+4)*4 : (i+4+1)*4])
+			if err != nil {
+				return nil, err
+			}
+			roundKey = append(roundKey, t...)
+		}
+		
+	}
+
+	return roundKey, nil
 }
 
 func genExpandedKey(key []byte) ([]byte, error) {
@@ -39,30 +93,27 @@ func genExpandedKey(key []byte) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("genExpandedKey: Invalid keylength %d", len(key))
 	}
-	expKeySize = expKeySize + 1 // to ignore error
-
-	return nil, nil
-	/*// 1. Set initial len(key) bytes of the expanded key
+	
+	// 1. Set initial len(key) bytes of the expanded key
 	expKey := make([]byte, len(key), expKeySize)
 	copy(expKey, key)
-	i := 1
 
-	// Initialise temp variable for initial 16 bytes
-	t := make([]byte, 4)
-	copy(t, expKey[0:4])
-	t = keyScheduleCore(t, i)
+	prevRoundKey := make([]byte, len(key))
+	copy(prevRoundKey, key)
 
-	// 2. Set next 
-	for i < 4 {
-		// XOR t with 4-byte block n bytes before, where n is length of the key
-		blockIdx := len(expKey) - len(key)
-		block := expKey[blockIdx:blockIdx+4]
-		value, err := encryption.XorBytes(block, t)
+	// 2. Add round keys until sufficient
+	for i := 1; len(expKey) < expKeySize; i++ {
+		roundKey, err := genRoundKey(i, len(key), prevRoundKey)
 		if err != nil {
-			return nil, fmt.Errorf("genExpandedKey: Error when XORing bytes: %v", err)
+			return nil, fmt.Errorf("genExpandedKey: Error generating round key: %v", err)
 		}
-		copy(expKey[i*4:(i+1)*4], value)
-		
-	}*/
+		expKey = append(expKey, roundKey...)
+		copy(prevRoundKey, roundKey)
+	}
+
+	// 3. Truncate expanded key, if it exceeds the desired size
+	expKey = expKey[:expKeySize]
+	
+	return expKey, nil
 
 }

@@ -16,7 +16,7 @@ func testGenExpandedKeyHelper(t *testing.T, tests [][]byte, expcs [][]byte, titl
 			t.Fatalf(`%s: Got error %v`, title, err)
 		}
 		if !util.IsBytestringEqual(result, expcs[i]) {
-			t.Fatalf(`%s: results[%d] != expcs[%d]`, title, i, i)
+			t.Fatalf(`%s: results[%d] != expcs[%d], results[%d] = "%s"`, title, i, i, i, util.BytestringAsString(result))
 		}
 	}
 }

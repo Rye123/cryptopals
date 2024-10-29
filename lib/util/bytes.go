@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"math/bits"
 )
 
@@ -15,6 +16,14 @@ func IsBytestringEqual(h1, h2 []byte) bool {
 		}
 	}
 	return true
+}
+
+func BytestringAsString(bytestr []byte) string {
+	result := "0x"
+	for _, b := range bytestr {
+		result = result + fmt.Sprintf("%02x", b)
+	}
+	return result
 }
 
 // Returns the hamming distance between two bytestrings
