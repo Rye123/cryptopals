@@ -26,40 +26,40 @@ func keyScheduleCore(word []byte, i int) []byte {
 	return result
 }
 
-// Returns the round key for roundConstant
-func genRoundKey(roundConstant int, keySize int, prevRoundKey []byte) ([]byte, error) {
+// Returns the n-byte key block for roundConstant
+func genKeyBlock(roundConstant int, keySize int, prevKeyBlock []byte) ([]byte, error) {
 	var err error
-	roundKey := make([]byte, 0, keySize)
+	keyBlock := make([]byte, 0, keySize)
 
 	// Set initial temporary value
 	t := make([]byte, 4)
-	copy(t, prevRoundKey[keySize-4:])
+	copy(t, prevKeyBlock[keySize-4:])
 	t = keyScheduleCore(t, roundConstant)
 
 	switch keySize {
 	case 16:
 		for i := 0; i < 4; i++ {
-			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			t, err = encryption.XorBytes(t, prevKeyBlock[i*4 : (i+1)*4])
 			if err != nil {
 				return nil, err
 			}
-			roundKey = append(roundKey, t...)
+			keyBlock = append(keyBlock, t...)
 		}
 	case 24:
 		for i := 0; i < 6; i++ {
-			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			t, err = encryption.XorBytes(t, prevKeyBlock[i*4 : (i+1)*4])
 			if err != nil {
 				return nil, err
 			}
-			roundKey = append(roundKey, t...)
+			keyBlock = append(keyBlock, t...)
 		}
 	case 32:
 		for i := 0; i < 4; i++ {
-			t, err = encryption.XorBytes(t, prevRoundKey[i*4 : (i+1)*4])
+			t, err = encryption.XorBytes(t, prevKeyBlock[i*4 : (i+1)*4])
 			if err != nil {
 				return nil, err
 			}
-			roundKey = append(roundKey, t...)
+			keyBlock = append(keyBlock, t...)
 		}
 
 		// Apply s-box on previous value
@@ -68,16 +68,16 @@ func genRoundKey(roundConstant int, keySize int, prevRoundKey []byte) ([]byte, e
 		}
 		
 		for i := 0; i < 4; i++ {
-			t, err = encryption.XorBytes(t, prevRoundKey[(i+4)*4 : (i+4+1)*4])
+			t, err = encryption.XorBytes(t, prevKeyBlock[(i+4)*4 : (i+4+1)*4])
 			if err != nil {
 				return nil, err
 			}
-			roundKey = append(roundKey, t...)
+			keyBlock = append(keyBlock, t...)
 		}
 		
 	}
 
-	return roundKey, nil
+	return keyBlock, nil
 }
 
 func genExpandedKey(key []byte) ([]byte, error) {
@@ -98,17 +98,17 @@ func genExpandedKey(key []byte) ([]byte, error) {
 	expKey := make([]byte, len(key), expKeySize)
 	copy(expKey, key)
 
-	prevRoundKey := make([]byte, len(key))
-	copy(prevRoundKey, key)
+	prevKeyBlock := make([]byte, len(key))
+	copy(prevKeyBlock, key)
 
 	// 2. Add round keys until sufficient
 	for i := 1; len(expKey) < expKeySize; i++ {
-		roundKey, err := genRoundKey(i, len(key), prevRoundKey)
+		keyBlock, err := genKeyBlock(i, len(key), prevKeyBlock)
 		if err != nil {
 			return nil, fmt.Errorf("genExpandedKey: Error generating round key: %v", err)
 		}
-		expKey = append(expKey, roundKey...)
-		copy(prevRoundKey, roundKey)
+		expKey = append(expKey, keyBlock...)
+		copy(prevKeyBlock, keyBlock)
 	}
 
 	// 3. Truncate expanded key, if it exceeds the desired size
