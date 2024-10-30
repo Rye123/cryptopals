@@ -40,6 +40,27 @@ var inverseSBox = [16][16]byte{
 	{0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d},
 }
 
+func gmul(a, b byte) byte {
+	var p byte
+	for i := 0; i < 8; i++ {
+		// p = p ^ a if low bit of b is set
+		if (b & 1) == 1 {
+			p ^= a
+		}
+
+		// Rotate a, and XOR with 0x1b if high bit of a is set
+		highBitSet := a & 0x80
+		a <<= 1
+		if highBitSet == 0x80 {
+			a ^= 0x1b
+		}
+
+		// Rotate b
+		b >>= 1
+	}
+	return p
+}
+
 // Returns 2^n in GF(2^8)
 func rcon(in byte) byte {
 	var c byte = 1
@@ -49,13 +70,7 @@ func rcon(in byte) byte {
 	}
 
 	for in != 1 {
-		// modular multiplication in GF(2^8)
-		var highBitSet byte = c & 0x80
-		c <<= 1
-		if highBitSet == 0x80 {
-			c ^= 0x1b
-		}
-		
+		c = gmul(c, 2);
 		in--
 	}
 
@@ -155,3 +170,36 @@ func rowShiftInv(state []byte) []byte {
 	result[15] = state[12]
 	return result
 }
+
+func mixCols(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	for i := 0; i < 4; i++ {
+		idx0 := 0 + i
+		idx1 := 4 + i
+		idx2 := 8 + i
+		idx3 := 12 + i
+		result[idx0] = gmul(state[idx0], 2) ^ gmul(state[idx1], 3) ^ state[idx2] ^ state[idx3]
+		result[idx1] = gmul(state[idx1], 2) ^ gmul(state[idx2], 3) ^ state[idx3] ^ state[idx0]
+		result[idx2] = gmul(state[idx2], 2) ^ gmul(state[idx3], 3) ^ state[idx0] ^ state[idx1]
+		result[idx3] = gmul(state[idx3], 2) ^ gmul(state[idx0], 3) ^ state[idx1] ^ state[idx2]
+	}
+	return result
+}
+
+func mixColsInv(state []byte) []byte {
+	validateStateArray(state)
+	result := make([]byte, len(state))
+	for i := 0; i < 4; i++ {
+		idx0 := 0 + i
+		idx1 := 4 + i
+		idx2 := 8 + i
+		idx3 := 12 + i
+		result[idx0] = gmul(state[idx0], 14) ^ gmul(state[idx1], 11) ^ gmul(state[idx2], 13) ^ gmul(state[idx3], 9)
+		result[idx1] = gmul(state[idx1], 14) ^ gmul(state[idx2], 11) ^ gmul(state[idx3], 13) ^ gmul(state[idx0], 9)
+		result[idx2] = gmul(state[idx2], 14) ^ gmul(state[idx3], 11) ^ gmul(state[idx0], 13) ^ gmul(state[idx1], 9)
+		result[idx3] = gmul(state[idx3], 14) ^ gmul(state[idx0], 11) ^ gmul(state[idx1], 13) ^ gmul(state[idx2], 9)
+	}
+	return result
+}
+ 
