@@ -7,73 +7,73 @@ import (
 
 func TestAESErrors(t *testing.T) {
 	// Test invalid data length
-	_, err := AESEncrypt([]byte("asdf"), []byte("AAAABBBBCCCCDDDD"))
+	_, err := aesEncrypt([]byte("asdf"), []byte("AAAABBBBCCCCDDDD"))
 	if err == nil {
 		t.Fatalf("TestAESErrors: AESEncrypt(invalid data length) gave no error")
 	}
-	_, err = AESDecrypt([]byte("asdf"), []byte("AAAABBBBCCCCDDDD"))
+	_, err = aesDecrypt([]byte("asdf"), []byte("AAAABBBBCCCCDDDD"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(invalid data length) gave no error")
+		t.Fatalf("TestAESErrors: aesDecrypt(invalid data length) gave no error")
 	}
 	
 	// Test invalid key lengths
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte(""))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte(""))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(empty pass) gave no error")
+		t.Fatalf("TestAESErrors: aesEncrypt(empty pass) gave no error")
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte(""))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte(""))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(empty pass) gave no error")
+		t.Fatalf("TestAESErrors: aesDecrypt(empty pass) gave no error")
 	}
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(1-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesEncrypt(1-len key) gave no error")
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(1-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesDecrypt(1-len key) gave no error")
 	}
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDE"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDE"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(15-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesEncrypt(15-len key) gave no error")
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDE"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDE"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(15-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesDecrypt(15-len key) gave no error")
 	}
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFG"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFG"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(17-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesEncrypt(17-len key) gave no error")
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFG"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFG"))
 	if err == nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(17-len key) gave no error")
+		t.Fatalf("TestAESErrors: aesDecrypt(17-len key) gave no error")
 	}
 
 	// Test appropriate lengths
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEF"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEF"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(16-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesEncrypt(16-len key) gave error %v", err)
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEF"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEF"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(16-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesDecrypt(16-len key) gave error %v", err)
 	}
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMO"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMO"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(24-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesEncrypt(24-len key) gave error %v", err)
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMO"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMO"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(24-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesDecrypt(24-len key) gave error %v", err)
 	}
-	_, err = AESEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMOPQRSTUVW"))
+	_, err = aesEncrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMOPQRSTUVW"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESEncrypt(32-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesEncrypt(32-len key) gave error %v", err)
 	}
-	_, err = AESDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMOPQRSTUVW"))
+	_, err = aesDecrypt([]byte("AAAABBBBCCCCDDDD"), []byte("0123456789ABCDEFGHIJKLMOPQRSTUVW"))
 	if err != nil {
-		t.Fatalf("TestAESErrors: AESDecrypt(32-len key) gave error %v", err)
+		t.Fatalf("TestAESErrors: aesDecrypt(32-len key) gave error %v", err)
 	}
 }
 
@@ -113,20 +113,20 @@ func TestAESEncryptDecrypt(t *testing.T) {
 	}
 
 	for i := 0; i < len(expcs); i++ {
-		result, err := AESEncrypt(tests_bytestr[i], tests_key[i])
+		result, err := aesEncrypt(tests_bytestr[i], tests_key[i])
 		if err != nil {
-			t.Fatalf(`TestAESEncryptDecrypt: AESEncrypt(tests_bytestr[%d], tests_key[%d]) gave error: %v`, i, i, err)
+			t.Fatalf(`TestAESEncryptDecrypt: aesEncrypt(tests_bytestr[%d], tests_key[%d]) gave error: %v`, i, i, err)
 		}
 		if !util.IsBytestringEqual(result, expcs[i]) {
-			t.Fatalf(`TestAESEncryptDecrypt: AESEncrypt(tests_bytestr[%d], tests_key[%d]) != expcs[%d]; expected: "%s"; got: "%s"`, i, i, i, util.BytestringAsString(expcs[i]), util.BytestringAsString(result))
+			t.Fatalf(`TestAESEncryptDecrypt: aesEncrypt(tests_bytestr[%d], tests_key[%d]) != expcs[%d]; expected: "%s"; got: "%s"`, i, i, i, util.BytestringAsString(expcs[i]), util.BytestringAsString(result))
 		}
 
-		decrypted, err := AESDecrypt(result, tests_key[i])
+		decrypted, err := aesDecrypt(result, tests_key[i])
 		if err != nil {
-			t.Fatalf(`TestAESEncryptDecrypt: AESDecrypt(result[%d], tests_key[%d]) gave error: %v`, i, i, err)
+			t.Fatalf(`TestAESEncryptDecrypt: aesDecrypt(result[%d], tests_key[%d]) gave error: %v`, i, i, err)
 		}
 		if !util.IsBytestringEqual(tests_bytestr[i], decrypted) {
-			t.Fatalf(`TestAesEncryptDecrypt: AESDecrypt(result[%d], tests_key[%d]) != tests_bytestr[%d]; expected: "%s"; got: "%s"`, i, i, i, util.BytestringAsString(tests_bytestr[i]), util.BytestringAsString(decrypted))
+			t.Fatalf(`TestAesEncryptDecrypt: aesDecrypt(result[%d], tests_key[%d]) != tests_bytestr[%d]; expected: "%s"; got: "%s"`, i, i, i, util.BytestringAsString(tests_bytestr[i]), util.BytestringAsString(decrypted))
 		}
 	}
 }
