@@ -1,6 +1,10 @@
 package aes
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Rye123/cryptopals/lib/encryption"
+)
 
 var forwardSBox = [16][16]byte{
 	{0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
@@ -101,6 +105,29 @@ func validateStateArray(state []byte) {
 	}
 }
 
+func addRoundKey(state []byte, roundKey []byte) ([]byte, error) {
+	if len(state) != 16 {
+		return nil, fmt.Errorf("Expected state array of 16 bytes, got %d", len(state))
+	}
+	if len(roundKey) != 16 {
+		return nil, fmt.Errorf("Expected round key of 16 bytes, got %d", len(roundKey))
+	}
+
+	// change round key to fit the data structure of state
+	key := []byte{
+		roundKey[0], roundKey[4], roundKey[8], roundKey[12],
+		roundKey[1], roundKey[5], roundKey[9], roundKey[13],
+		roundKey[2], roundKey[6], roundKey[10], roundKey[14],
+		roundKey[3], roundKey[7], roundKey[11], roundKey[15],
+	}
+
+	result, err := encryption.XorBytes(state, key)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // AES forward s-box on a state array
 func subBytes(state []byte) []byte {
 	validateStateArray(state)
@@ -149,6 +176,8 @@ func rowShift(state []byte) []byte {
 func rowShiftInv(state []byte) []byte {
 	validateStateArray(state)
 	result := make([]byte, len(state))
+
+	// Row 0 is not shifted
 	copy(result[0:4], state[0:4])
 	
 	// Row 1 is shifted right once
