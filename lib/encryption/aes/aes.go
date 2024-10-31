@@ -1,9 +1,4 @@
-package encryption
-
-type AESMode int
-const (
-	AESMode_ECB AESMode = iota
-)
+package aes
 
 func AESEncryptWithMode(bytestr []byte, key []byte, mode AESMode, iv []byte) ([]byte, error) {
 	return bytestr, nil
